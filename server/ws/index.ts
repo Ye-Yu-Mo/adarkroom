@@ -35,20 +35,21 @@ export class WsManager {
   private connections = new Map<string, SocketLike>();
   private seq = 0;
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
-  private pendingPongs = new Set<string>(); // playerIds awaiting pong response
+  private pendingPongs = new Set<string>();
+  onConnect: ((playerId: string) => void) | null = null;
+  onDisconnect: ((playerId: string) => void) | null = null; // playerIds awaiting pong response
 
   addConnection(playerId: string, ws: SocketLike): void {
-    // Close old connection if this player reconnects
     const old = this.connections.get(playerId);
-    if (old?.readyState === 1) {
-      old.close(1000, 'Reconnected from another session');
-    }
+    if (old?.readyState === 1) old.close(1000, 'Reconnected');
     this.connections.set(playerId, ws);
+    this.onConnect?.(playerId);
   }
 
   removeConnection(playerId: string): void {
     this.connections.delete(playerId);
     this.pendingPongs.delete(playerId);
+    this.onDisconnect?.(playerId);
   }
 
   isOnline(playerId: string): boolean {

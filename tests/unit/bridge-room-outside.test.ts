@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Room + Outside bridge tests — M3-F4
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let Bridge: any;
 
 beforeEach(async () => {
@@ -30,13 +30,11 @@ describe('Room hook', () => {
   it('restores Room.build on deactivate', () => {
     Bridge.activate('w1', 'tok');
     Bridge.deactivate();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect(typeof (globalThis as any).Room.build).toBe('function');
   });
 
   it('Room.build is callable after hook', () => {
     Bridge.activate('w1', 'tok');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const btn = { getAttribute: vi.fn(() => 'hut') } as unknown as HTMLElement;
     const result = (globalThis as any).Room.build(btn);
     expect(result).toBeDefined();
@@ -56,7 +54,6 @@ describe('Outside hook', () => {
   it('restores Outside functions on deactivate', () => {
     Bridge.activate('w1', 'tok');
     Bridge.deactivate();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const O = (globalThis as any).Outside;
     expect(typeof O.updateVillageIncome).toBe('function');
     expect(typeof O.increasePopulation).toBe('function');

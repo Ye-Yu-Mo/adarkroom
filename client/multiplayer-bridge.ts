@@ -146,12 +146,9 @@ export const MultiplayerBridge = {
     // Restore Outside originals
     const O = getOutside();
     if (O) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      if (originals.outsideUpdateIncome) O.updateVillageIncome = originals.outsideUpdateIncome;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      if (originals.outsideIncreasePop) O.increasePopulation = originals.outsideIncreasePop;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      if (originals.outsideGetMaxPop) O.getMaxPopulation = originals.outsideGetMaxPop;
+      if (originals.outsideUpdateIncome) O.updateVillageIncome = originals.outsideUpdateIncome as () => void;
+      if (originals.outsideIncreasePop) O.increasePopulation = originals.outsideIncreasePop as () => void;
+      if (originals.outsideGetMaxPop) O.getMaxPopulation = originals.outsideGetMaxPop as () => number;
     }
     active = false;
   },
@@ -202,7 +199,8 @@ function hookOutside(): void {
       // Guild mode: workers are managed via guild API, not client timers
       return;
     }
-    return (originals.outsideUpdateIncome as () => void).call(O);
+    (originals.outsideUpdateIncome as () => void).call(O);
+    return;
   };
 
   // Redirect population to guild buildings
@@ -216,7 +214,8 @@ function hookOutside(): void {
   // Disable local population growth in guild mode
   O.increasePopulation = function () {
     if (GuildState.isJoined()) return;
-    return (originals.outsideIncreasePop as () => void).call(O);
+    (originals.outsideIncreasePop as () => void).call(O);
+    return;
   };
 }
 

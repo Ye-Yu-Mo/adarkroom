@@ -18,12 +18,19 @@ import { randomBytes } from 'node:crypto';
 import { query } from '../db/pool';
 import { authMiddleware, type AuthenticatedRequest } from '../auth/middleware';
 import { guildMiddleware, type GuildRequest } from './guild-middleware';
+import type { WsManager } from '../ws/index';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function guildChain(): any[] { return [authMiddleware, guildMiddleware]; }
 
-export function registerGuildRoutes(): Router {
+export function registerGuildRoutes(wsManager: WsManager): Router {
   const router = Router();
+
+  async function broadcastToGuild(guildId: string, msg: { type: string; payload?: Record<string, unknown> }): Promise<void> {
+    const members = await query('SELECT player_id FROM guild_members WHERE guild_id = $1', [guildId]);
+    const ids = (members.rows as { player_id: string }[]).map(r => r.player_id);
+    wsManager.broadcast(ids, msg);
+  }
 
   // ── Create guild ──────────────────────────────────────
   const createSchema = z.object({ name: z.string().min(1).max(48) });
@@ -118,6 +125,7 @@ export function registerGuildRoutes(): Router {
        ON CONFLICT (guild_id, building_name) DO UPDATE SET level = guild_buildings.level + 1, built_at = now()`,
       [r.guildId, building_name],
     );
+    broadcastToGuild(r.guildId, { type: 'guild:building_complete', payload: { building: building_name, built_by: r.playerId } }).catch(() => undefined);
     res.json({ ok: true, data: { building: building_name } });
   });
 
@@ -155,6 +163,7 @@ export function registerGuildRoutes(): Router {
     if (amount > row.daily_limit) { res.status(400).json({ ok: false, error: { code: 'DAILY_LIMIT', message: 'Exceeds daily withdrawal limit' } }); return; }
 
     await query('UPDATE guild_resources SET quantity = quantity - $1, daily_limit = daily_limit - $1, updated_at = now() WHERE guild_id = $2 AND resource_name = $3', [amount, r.guildId, resource_name]);
+    broadcastToGuild(r.guildId, { type: 'guild:resource_update', payload: { resource_name, withdrawn: amount } }).catch(() => undefined);
     res.json({ ok: true, data: { resource_name, withdrawn: amount, remaining_quantity: row.quantity - amount } });
   });
 
