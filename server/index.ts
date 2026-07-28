@@ -11,6 +11,8 @@ import express from 'express';
 import { createServer } from 'node:http';
 import { config } from './config';
 import { registerAuthRoutes } from './auth/handler';
+import { registerWorldRoutes } from './world/handler';
+import { seedDefaultWorld } from './world/seed';
 import { createWsServer, WsManager } from './ws/index';
 
 export async function startServer(): Promise<{
@@ -26,6 +28,9 @@ export async function startServer(): Promise<{
   // Auth routes
   app.use('/api/v1/auth', registerAuthRoutes());
 
+  // World routes
+  app.use('/api/v1/world', registerWorldRoutes());
+
   // Health check — references wsManager via closure
   app.get('/api/health', (_req, res) => {
     res.json({ ok: true, version: '1.4.0', online: wsManager.getOnlineCount() });
@@ -35,6 +40,9 @@ export async function startServer(): Promise<{
   const httpServer = createServer(app);
   createWsServer(httpServer, wsManager);
   wsManager.startHeartbeat(config.ws.heartbeatInterval);
+
+  // Seed the default world on first boot
+  await seedDefaultWorld();
 
   // Start listening
   await new Promise<void>((resolve) => {
