@@ -1,4 +1,5 @@
 /.settings
+*.md
 *.TODO
 *.mo
 *.swp
@@ -7,3 +8,17 @@ lang/.DS_Store
 .DS_Store
 node_modules
 img/Thumbs.db
+*.mo
+*.swp
+*.TODO
+.DS_Store
+node_modules
+dist
+.env
+.env.local
+.env.production.local
+# IDE
+.idea
+.vscode
+/settings
+Thumbs.db

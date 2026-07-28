@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist/server",
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "noEmit": false,
+    "verbatimModuleSyntax": false
+  },
+  "include": ["server", "shared"],
+  "exclude": ["node_modules", "tests", "client"]
+}
