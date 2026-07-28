@@ -13,6 +13,7 @@
  */
 
 import { WorldSync } from './world-sync';
+import { GuildState } from './guild';
 
 // ── Landmark tile types ──────────────────────────────────
 
@@ -125,19 +126,99 @@ export const MultiplayerBridge = {
         (originals.doSpace as () => void).call(W);
       }
     };
+    // Hook Room and Outside
+    hookRoom();
+    hookOutside();
   },
 
   deactivate(): void {
     if (!active) return;
+    // Restore World originals
     const W = getWorld();
     if (W) {
-      for (const [name, fn] of Object.entries(originals)) {
-        W[name] = fn;
-      }
+      if (originals.generateMap) W.generateMap = originals.generateMap;
+      if (originals.lightMap) W.lightMap = originals.lightMap;
+      if (originals.doSpace) W.doSpace = originals.doSpace;
+    }
+    // Restore Room originals
+    const R = getRoom();
+    if (R && originals.roomBuild) R.build = originals.roomBuild;
+    // Restore Outside originals
+    const O = getOutside();
+    if (O) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      if (originals.outsideUpdateIncome) O.updateVillageIncome = originals.outsideUpdateIncome;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      if (originals.outsideIncreasePop) O.increasePopulation = originals.outsideIncreasePop;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      if (originals.outsideGetMaxPop) O.getMaxPopulation = originals.outsideGetMaxPop;
     }
     active = false;
   },
 };
+
+// ── Room Hook ──────────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getRoom(): any { return (globalThis as any).Room; }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getOutside(): any { return (globalThis as any).Outside; }
+
+function hookRoom(): void {
+  const R = getRoom();
+  if (!R) return;
+
+  // Save original build
+  originals.roomBuild = R.build;
+  R.build = function (btn: HTMLElement) {
+    // Multiplayer mode: delegate to guild API
+    if (GuildState.isJoined()) {
+      const thing = btn.getAttribute('buildThing');
+      if (thing) {
+        GuildState.build(thing).then(ok => {
+          if (ok && R.updateBuildButtons) R.updateBuildButtons();
+        }).catch(() => undefined);
+      }
+      return true;
+    }
+    // Single-player: call original
+    return (originals.roomBuild as (btn: HTMLElement) => boolean).call(R, btn);
+  };
+}
+
+function hookOutside(): void {
+  const O = getOutside();
+  if (!O) return;
+
+  // Save originals
+  originals.outsideUpdateIncome = O.updateVillageIncome;
+  originals.outsideIncreasePop = O.increasePopulation;
+  originals.outsideGetMaxPop = O.getMaxPopulation;
+
+  // Redirect income to guild workers
+  O.updateVillageIncome = function () {
+    if (GuildState.isJoined()) {
+      // Guild mode: workers are managed via guild API, not client timers
+      return;
+    }
+    return (originals.outsideUpdateIncome as () => void).call(O);
+  };
+
+  // Redirect population to guild buildings
+  O.getMaxPopulation = function () {
+    if (GuildState.isJoined()) {
+      return GuildState.getBuildingLevel('hut') * 4;
+    }
+    return (originals.outsideGetMaxPop as () => number).call(O);
+  };
+
+  // Disable local population growth in guild mode
+  O.increasePopulation = function () {
+    if (GuildState.isJoined()) return;
+    return (originals.outsideIncreasePop as () => void).call(O);
+  };
+}
 
 // ── Helpers ──────────────────────────────────────────────
 
