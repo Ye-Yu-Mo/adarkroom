@@ -6,20 +6,9 @@
  */
 
 import { Router } from 'express';
-import { z } from 'zod';
 import { query } from '../db/pool';
 import { signToken, hashToken } from './token';
-
-// ── Validation schemas ───────────────────────────────────
-
-const registerSchema = z.object({
-  device_id: z.string().min(1).max(64),
-  display_name: z.string().min(1).max(24),
-});
-
-const loginSchema = z.object({
-  device_id: z.string().min(1).max(64),
-});
+import { registerSchema, loginSchema } from '../../shared/validation';
 
 // ── Router factory ───────────────────────────────────────
 

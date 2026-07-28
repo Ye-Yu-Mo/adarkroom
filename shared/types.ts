@@ -1,5 +1,6 @@
 /** Shared type definitions for A Dark Room multiplayer expansion.
  *  Import from this file on both client and server.
+ *  @module shared/types
  */
 
 // ── Player ──────────────────────────────────────────────
@@ -34,3 +35,29 @@ export interface ApiError {
 }
 
 export type ApiResult<T> = ApiResponse<T> | ApiError;
+
+// ── Auth ────────────────────────────────────────────────
+
+export interface RegisterRequest {
+  device_id: string;
+  display_name: string;
+}
+
+export interface LoginRequest {
+  device_id: string;
+}
+
+export interface AuthPlayer {
+  id: string;
+  display_name: string;
+  created_at: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  player: AuthPlayer;
+}
+
+// ── Re-export Zod schemas (imported by server) ──────────
+
+export { registerSchema, loginSchema } from './validation';
