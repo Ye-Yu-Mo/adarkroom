@@ -38,6 +38,8 @@ export default tseslint.config(
       '*.html',
       '*.css',
       '*.mjs',
+      'client/*.js',
+      'scripts/',
     ],
   },
 );
