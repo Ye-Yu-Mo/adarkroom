@@ -72,3 +72,13 @@ div.supplyItem {
 	padding: 0 5px;
 	cursor: default;
 }
+/* Minimap overlay — multiplayer M2 */
+#minimap-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 10;
+  image-rendering: pixelated;
+  opacity: 0.85;
+}

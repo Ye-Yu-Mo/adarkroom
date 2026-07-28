@@ -7,11 +7,11 @@
 import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 
 // Stub browser APIs for client module
+const storageData: Record<string, string> = {};
 vi.stubGlobal('localStorage', {
-  _data: {} as Record<string, string>,
-  getItem(k: string) { return this._data[k] ?? null; },
-  setItem(k: string, v: string) { this._data[k] = v; },
-  removeItem(k: string) { delete this._data[k]; },
+  getItem(k: string): string | null { return storageData[k] ?? null; },
+  setItem(k: string, v: string): void { storageData[k] = v; },
+  removeItem(k: string): void { Reflect.deleteProperty(storageData, k); },
 });
 
 describe('server/world/sync.ts — hash & diff', () => {
