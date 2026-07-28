@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { query } from '../db/pool';
 import { authMiddleware } from '../auth/middleware';
 import type { AuthenticatedRequest } from '../auth/middleware';
+import { diffTiles, type TileRow } from './sync';
 
 export function registerWorldRoutes(): Router {
   const router = Router();
@@ -35,7 +36,11 @@ export function registerWorldRoutes(): Router {
       [worldId, Math.min(x1, x2), Math.max(x1, x2), Math.min(y1, y2), Math.max(y1, y2)],
     );
 
-    res.json({ ok: true, data: { tiles: result.rows } });
+    const clientHash = typeof req.query.hash === 'string' ? req.query.hash : null;
+    const tiles = result.rows as TileRow[];
+    const diff = diffTiles(clientHash, tiles);
+
+    res.json({ ok: true, data: { tiles: diff.changed, hash: diff.hash } });
   });
 
   router.get('/:worldId/landmarks', authMiddleware, async (req, res) => {
