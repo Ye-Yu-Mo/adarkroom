@@ -29,9 +29,16 @@ var saved = loadAuth();
 if (saved) {
   token = saved.token;
 }
+if (typeof window !== "undefined") {
+  window.Multiplayer = Multiplayer;
+}
+if (typeof window !== "undefined") {
+  window.Multiplayer = Multiplayer;
+}
 function getWsUrl() {
   const proto = location.protocol === "https:" ? "wss:" : "ws:";
-  return `${proto}//${location.hostname}:${location.port || "3000"}/ws`;
+  const port = "3400";
+  return `${proto}//${location.hostname}:${port}/ws`;
 }
 function createSocket() {
   if (!token) return;
@@ -182,6 +189,9 @@ var Multiplayer = {
     }
   }
 };
+if (typeof window !== "undefined") {
+  window.Multiplayer = Multiplayer;
+}
 export {
   Multiplayer
 };

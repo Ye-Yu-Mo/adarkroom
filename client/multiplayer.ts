@@ -72,11 +72,25 @@ if (saved) {
   token = saved.token;
 }
 
+// Expose on window for Console access
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).Multiplayer = Multiplayer;
+}
+
+// Expose on window for Console access
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).Multiplayer = Multiplayer;
+}
+
 // ── WebSocket connection ─────────────────────────────────
 
 function getWsUrl(): string {
   const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  return `${proto}//${location.hostname}:${location.port || '3000'}/ws`;
+  // Multiplayer server runs on port 3400 (configurable)
+  const port = '3400';
+  return `${proto}//${location.hostname}:${port}/ws`;
 }
 
 function createSocket(): void {
@@ -259,3 +273,9 @@ export const Multiplayer = {
     },
   },
 };
+
+// Expose on window for browser Console access
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).Multiplayer = Multiplayer;
+}

@@ -8,6 +8,7 @@
  */
 
 import express from 'express';
+import cors from 'cors';
 import { createServer } from 'node:http';
 import { config } from './config';
 import { registerAuthRoutes } from './auth/handler';
@@ -21,6 +22,7 @@ export async function startServer(): Promise<{
 }> {
   const app = express();
   app.use(express.json());
+  app.use(cors({ origin: config.cors.origin }));
 
   // Create the WebSocket manager BEFORE building routes that reference it
   const wsManager = new WsManager();
