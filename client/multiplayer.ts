@@ -72,18 +72,6 @@ if (saved) {
   token = saved.token;
 }
 
-// Expose on window for Console access
-if (typeof window !== 'undefined') {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).Multiplayer = Multiplayer;
-}
-
-// Expose on window for Console access
-if (typeof window !== 'undefined') {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).Multiplayer = Multiplayer;
-}
-
 // ── WebSocket connection ─────────────────────────────────
 
 function getWsUrl(): string {
