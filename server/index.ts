@@ -13,6 +13,7 @@ import { createServer } from 'node:http';
 import { config } from './config';
 import { registerAuthRoutes } from './auth/handler';
 import { registerWorldRoutes } from './world/handler';
+import { registerGuildRoutes } from './village/handler';
 import { seedDefaultWorld } from './world/seed';
 import { createWsServer, WsManager } from './ws/index';
 
@@ -32,6 +33,7 @@ export async function startServer(): Promise<{
 
   // World routes (needs wsManager for broadcasting)
   app.use('/api/v1/world', registerWorldRoutes(wsManager));
+  app.use('/api/v1/guilds', registerGuildRoutes());
 
   // Health check — references wsManager via closure
   app.get('/api/health', (_req, res) => {
