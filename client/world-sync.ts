@@ -51,6 +51,43 @@ export const WorldSync = {
     } catch {
       // Corrupted cache — start fresh
     }
+
+    // Subscribe to WS events for player visibility
+    this.subscribeWs();
+  },
+
+  subscribeWs(): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mp = (window as any).Multiplayer;
+    if (!mp) return;
+
+    mp.on('player:enter', (p: { playerId: string; displayName: string; pos: { x: number; y: number } }) => {
+      this.onPlayerEnter(p.playerId, p.displayName, p.pos.x, p.pos.y);
+    });
+    mp.on('player:leave', (p: { playerId: string }) => {
+      this.onPlayerLeave(p.playerId);
+    });
+    mp.on('player:move', (p: { playerId: string; x: number; y: number }) => {
+      this.onPlayerMove(p.playerId, p.x, p.y);
+    });
+  },
+
+  onPlayerEnter(id: string, name: string, x: number, y: number): void {
+    // Will be handled by Minimap module
+    if (typeof window !== 'undefined') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).Minimap?.updatePlayer(id, name, x, y);
+    }
+  },
+
+  onPlayerLeave(id: string): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).Minimap?.removePlayer(id);
+  },
+
+  onPlayerMove(id: string, x: number, y: number): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).Minimap?.updatePlayer(id, '', x, y);
   },
 
   getTile(x: number, y: number): CachedTile | null {

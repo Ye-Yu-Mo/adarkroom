@@ -8,8 +8,10 @@ import { query } from '../db/pool';
 import { authMiddleware } from '../auth/middleware';
 import type { AuthenticatedRequest } from '../auth/middleware';
 import { diffTiles, type TileRow } from './sync';
+import { Visibility } from './visibility';
+import type { WsManager } from '../ws/index';
 
-export function registerWorldRoutes(): Router {
+export function registerWorldRoutes(wsManager: WsManager): Router {
   const router = Router();
 
   router.get('/:worldId/tiles', authMiddleware, async (req, res) => {
@@ -100,12 +102,62 @@ export function registerWorldRoutes(): Router {
       }
     }
 
+    // Store old position for enter/leave calculation
+    const oldX = prev.rows.length > 0 ? (prev.rows[0] as { x: number }).x : x;
+    const oldY = prev.rows.length > 0 ? (prev.rows[0] as { y: number }).y : y;
+
     await query(
       `INSERT INTO player_positions (player_id, world_id, x, y)
        VALUES ($1, $2, $3, $4)
        ON CONFLICT (player_id, world_id) DO UPDATE SET x = $3, y = $4, updated_at = now()`,
       [playerId, worldId, x, y],
     );
+
+    // Get player display name for broadcasts
+    const playerResult = await query('SELECT display_name FROM players WHERE id = $1', [playerId]);
+    const displayName = (playerResult.rows[0] as { display_name: string } | undefined)?.display_name ?? 'Unknown';
+
+    // Broadcast movement to all players in visible range of old + new position
+    const VIEW_RADIUS = 5;
+    const allOnline = wsManager.getOnlinePlayers();
+    const oldVisible: string[] = [];
+    const newVisible: string[] = [];
+
+    for (const pid of allOnline) {
+      if (pid === playerId) continue;
+      const pos = await query(
+        'SELECT x, y FROM player_positions WHERE player_id = $1 AND world_id = $2',
+        [pid, worldId],
+      );
+      if (pos.rows.length === 0) continue;
+      const ppos = pos.rows[0] as { x: number; y: number };
+      if (Visibility.inRange(oldX, oldY, ppos.x, ppos.y, VIEW_RADIUS)) oldVisible.push(pid);
+      if (Visibility.inRange(x, y, ppos.x, ppos.y, VIEW_RADIUS)) newVisible.push(pid);
+    }
+
+    // Send player:move to new visible players
+    for (const pid of newVisible) {
+      wsManager.send(pid, { type: 'player:move', payload: { playerId, displayName, x, y } });
+    }
+    // Also send to old visible (so their minimap updates smoothly)
+    for (const pid of oldVisible) {
+      if (!newVisible.includes(pid)) {
+        wsManager.send(pid, { type: 'player:move', payload: { playerId, displayName, x, y } });
+        wsManager.send(pid, { type: 'player:leave', payload: { playerId } });
+      }
+    }
+
+    // Enter/leave detection
+    const { entered, left } = Visibility.diffPlayers(oldVisible, newVisible);
+    for (const pid of entered) {
+      wsManager.send(pid, {
+        type: 'player:enter',
+        payload: { playerId, displayName, pos: { x, y } },
+      });
+    }
+    for (const pid of left) {
+      wsManager.send(pid, { type: 'player:leave', payload: { playerId } });
+    }
 
     res.json({ ok: true, data: { x, y } });
   });

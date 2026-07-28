@@ -28,8 +28,8 @@ export async function startServer(): Promise<{
   // Auth routes
   app.use('/api/v1/auth', registerAuthRoutes());
 
-  // World routes
-  app.use('/api/v1/world', registerWorldRoutes());
+  // World routes (needs wsManager for broadcasting)
+  app.use('/api/v1/world', registerWorldRoutes(wsManager));
 
   // Health check — references wsManager via closure
   app.get('/api/health', (_req, res) => {
