@@ -1,0 +1,53 @@
+/* Guild panel styles — M3 */
+
+.guild-panel {
+  margin-top: 10px;
+  padding: 8px;
+  border: 1px solid #555;
+  background: rgba(0,0,0,0.3);
+  font-size: 14px;
+  max-width: 300px;
+}
+
+.guild-header {
+  font-weight: bold;
+  font-size: 15px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #444;
+  padding-bottom: 4px;
+}
+
+.guild-header .invite-code {
+  font-family: monospace;
+  color: #88cc88;
+  font-size: 12px;
+}
+
+.guild-section {
+  margin: 4px 0;
+}
+
+.guild-section b {
+  display: block;
+  color: #aaa;
+  font-size: 11px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.guild-member {
+  padding: 1px 0;
+}
+
+.guild-member .role {
+  color: #888;
+  font-size: 11px;
+}
+
+.online-dot { color: #44cc44; }
+.offline-dot { color: #666; }
+
+.guild-empty {
+  color: #666;
+  font-style: italic;
+}
