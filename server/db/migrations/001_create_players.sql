@@ -1,5 +1,5 @@
 -- UP
-CREATE TABLE players (
+CREATE TABLE IF NOT EXISTS players (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   display_name VARCHAR(24) NOT NULL,
   device_id    VARCHAR(64) NOT NULL UNIQUE,
@@ -8,9 +8,9 @@ CREATE TABLE players (
   deleted_at   TIMESTAMPTZ
 );
 
-CREATE INDEX idx_players_device_id ON players(device_id);
+CREATE INDEX IF NOT EXISTS idx_players_device_id ON players(device_id);
 
-CREATE TABLE auth_tokens (
+CREATE TABLE IF NOT EXISTS auth_tokens (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   player_id  UUID NOT NULL REFERENCES players(id) ON DELETE CASCADE,
   token_hash VARCHAR(128) NOT NULL UNIQUE,
@@ -19,8 +19,8 @@ CREATE TABLE auth_tokens (
   revoked_at TIMESTAMPTZ
 );
 
-CREATE INDEX idx_auth_tokens_player ON auth_tokens(player_id);
-CREATE INDEX idx_auth_tokens_hash   ON auth_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_auth_tokens_player ON auth_tokens(player_id);
+CREATE INDEX IF NOT EXISTS idx_auth_tokens_hash   ON auth_tokens(token_hash);
 
 -- DOWN
 DROP TABLE IF EXISTS auth_tokens;
