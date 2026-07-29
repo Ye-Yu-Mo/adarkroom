@@ -1,18 +1,17 @@
 /**
- * Quick build script — compiles client TypeScript to browser-ready JavaScript.
- * Uses esbuild (already installed as a vitest dependency).
+ * Build script — compiles client TypeScript entry point to browser-ready JavaScript.
+ * Uses esbuild to bundle all imports into a single file.
  */
 import * as esbuild from 'esbuild';
 
 await esbuild.build({
-  entryPoints: ['client/bridge.ts', 'client/multiplayer.ts'],
+  entryPoints: ['client/main.ts'],
   bundle: true,
   format: 'esm',
-  outdir: 'client',
-  outExtension: { '.js': '.js' },
+  outfile: 'client/main.js',
   target: 'es2022',
   platform: 'browser',
 });
 
 // eslint-disable-next-line no-console
-console.log('[build] client JS compiled');
+console.log('[build] client JS compiled → client/main.js');

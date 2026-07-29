@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/consistent-type-imports */
+/* eslint-disable @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-confusing-void-expression */
 /**
  * Invite code system tests — M3-F6
  *
@@ -13,10 +15,11 @@ import 'dotenv/config';
 
 const ROOT = join(import.meta.dirname, '..', '..');
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let app: ReturnType<typeof express>;
 let server: Server;
 let baseUrl: string;
-let tokens: string[] = [];
+const tokens: string[] = [];
 let guildId = '';
 let inviteCode = '';
 
@@ -92,7 +95,7 @@ describe('invite code', () => {
     const res = await fetch(`${baseUrl}/api/v1/guilds/${guildId}`, {
       headers: { Authorization: `Bearer ${tokens[0]}` },
     });
-    const body = (await res.json()) as { ok: boolean; data: { members: Array<{ player_id: string; role: string }> } };
+    const body = (await res.json()) as { ok: boolean; data: { members: { player_id: string; role: string }[] } };
     expect(body.data.members).toHaveLength(2);
     const roles = body.data.members.map(m => m.role).sort();
     expect(roles).toEqual(['founder', 'member']);

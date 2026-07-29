@@ -24,7 +24,7 @@ export async function startServer(): Promise<{
 }> {
   const app = express();
   app.use(express.json());
-  app.use(cors({ origin: config.cors.origin }));
+  app.use(cors({ origin: ['http://localhost:8400', 'http://127.0.0.1:8400'] }));
 
   // Create the WebSocket manager BEFORE building routes that reference it
   const wsManager = new WsManager();
